@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SteamClone.BLL/SteamClone.BLL.csproj" Id="1e3aecef-2113-4f0b-a788-8ec407fd4e6e" />
+  <Project Path="SteamClone.DAL/SteamClone.DAL.csproj" Id="547171b1-a49c-476d-bd20-06cde85483a5" />
+  <Project Path="SteamClone/SteamClone.API.csproj" />
+</Solution>
