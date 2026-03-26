@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SteamClone.DAL.Entities;
 
 namespace SteamClone.DAL.Repositories
@@ -9,7 +9,7 @@ namespace SteamClone.DAL.Repositories
 
         public GenreRepository(AppDbContext context)
             : base(context)
-        {   
+        {
             _context = context;
         }
 
@@ -20,6 +20,7 @@ namespace SteamClone.DAL.Repositories
             return await _context.Genres
                 .FirstOrDefaultAsync(g => g.Name.ToLower() == name.ToLower());
         }
+
         public IQueryable<GenreEntity> GetByName(string name)
         {
             return _context.Genres

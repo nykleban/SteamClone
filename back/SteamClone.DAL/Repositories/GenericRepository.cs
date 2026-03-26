@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SteamClone.DAL.Entities;
 
 namespace SteamClone.DAL.Repositories

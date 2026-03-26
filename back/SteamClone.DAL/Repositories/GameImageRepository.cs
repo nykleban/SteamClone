@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SteamClone.DAL.Entities;
 
 namespace SteamClone.DAL.Repositories
@@ -6,6 +6,7 @@ namespace SteamClone.DAL.Repositories
     public class GameImageRepository : GenericRepository<GameImageEntity>
     {
         private readonly AppDbContext _context;
+
         public GameImageRepository(AppDbContext context) : base(context)
         {
             _context = context;
@@ -17,6 +18,7 @@ namespace SteamClone.DAL.Repositories
                 .AsNoTracking()
                 .Where(gi => gi.GameId == gameId);
         }
+
         public async Task<GameImageEntity?> GetByGameName(string gameName)
         {
             return await _context.GameImages

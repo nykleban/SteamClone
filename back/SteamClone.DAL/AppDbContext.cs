@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SteamClone.DAL.Entities;
 
 namespace SteamClone.DAL
@@ -19,6 +19,7 @@ namespace SteamClone.DAL
         {
             base.OnModelCreating(builder);
 
+            // Game
             builder.Entity<GameEntity>(e =>
             {
                 e.HasKey(g => g.Id);
@@ -31,6 +32,7 @@ namespace SteamClone.DAL
                     .HasColumnType("text");
             });
 
+            // GameImage
             builder.Entity<GameImageEntity>(e =>
             {
                 e.HasKey(gi => gi.Id);
@@ -40,6 +42,7 @@ namespace SteamClone.DAL
                     .HasMaxLength(100);
             });
 
+            // Developer
             builder.Entity<DeveloperEntity>(e =>
             {
                 e.HasKey(d => d.Id);
@@ -52,6 +55,7 @@ namespace SteamClone.DAL
                     .HasMaxLength(50);
             });
 
+            // Genre
             builder.Entity<GenreEntity>(e =>
             {
                 e.HasKey(g => g.Id);
@@ -61,6 +65,7 @@ namespace SteamClone.DAL
                     .HasMaxLength(50);
             });
 
+            // Relationships
             builder.Entity<GameEntity>()
                 .HasMany(g => g.Images)
                 .WithOne(i => i.Game)
