@@ -1,3 +1,5 @@
+// UpdateGameDto.cs
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace SteamClone.BLL.Dtos.Game
@@ -20,6 +22,12 @@ namespace SteamClone.BLL.Dtos.Game
         [Required(ErrorMessage = "Id розробника є обов'язковим")]
         public int DeveloperId { get; set; }
 
-        public List<int> GenreIds { get; set; } = [];
+        public List<int> Genres { get; set; } = [];
+
+        // null = не змінювати превью
+        public IFormFile? PreviewImage { get; set; }
+
+        // порожній список = не змінювати скріншоти
+        public List<IFormFile> Images { get; set; } = [];
     }
 }

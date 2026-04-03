@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace SteamClone.BLL.Dtos.Genre
@@ -6,5 +7,6 @@ namespace SteamClone.BLL.Dtos.Genre
     {
         [Required(ErrorMessage = "Назва є обов'язковою")]
         public string Name { get; set; } = string.Empty;
+        public IFormFile? Image { get; set; }
     }
 }

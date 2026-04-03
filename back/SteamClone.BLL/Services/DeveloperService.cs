@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SteamClone.BLL.Dtos.Developer;
+using SteamClone.BLL.Settings;
 using SteamClone.DAL.Entities;
 using SteamClone.DAL.Repositories;
 using System;
@@ -12,12 +13,14 @@ namespace SteamClone.BLL.Services
     public class DeveloperService
     {
         private readonly DeveloperRepository _developerRepository;
+        private readonly FileService _fileService;
         private readonly IMapper _mapper;
 
-        public DeveloperService(DeveloperRepository developerRepository, IMapper mapper)
+        public DeveloperService(DeveloperRepository developerRepository, IMapper mapper, FileService fileService)
         {
             _developerRepository = developerRepository;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
         public async Task<ServiceResponse> GetAllAsync()
@@ -45,6 +48,20 @@ namespace SteamClone.BLL.Services
             return ServiceResponse.Success("Розробника отримано", dto);
         }
 
+        public async Task<ServiceResponse> GetByNameAsync(string name)
+        {
+            var entity = await _developerRepository.GetByNameAsync(name);
+
+            if (entity == null)
+            {
+                return ServiceResponse.Error($"Розробник '{name}' не знайдений");
+            }
+
+            var dto = _mapper.Map<DeveloperDto>(entity);
+
+            return ServiceResponse.Success($"Розробника отримано", dto);
+        }
+
         public async Task<ServiceResponse> CreateAsync(CreateDeveloperDto dto)
         {
             if (await _developerRepository.IsExistsAsync(dto.Name))
@@ -54,6 +71,16 @@ namespace SteamClone.BLL.Services
 
             // mapping
             var entity = _mapper.Map<DeveloperEntity>(dto);
+
+            // image
+            if (dto.Image != null)
+            {
+                var fileResponse = await _fileService.SaveImageAsync(dto.Image, StaticFilesSettings.Developers);
+                if (fileResponse.IsSuccess)
+                {
+                    entity.Image = fileResponse.Payload?.ToString();
+                }
+            }
 
             bool res = await _developerRepository.CreateAsync(entity);
 
@@ -72,28 +99,35 @@ namespace SteamClone.BLL.Services
             var entity = await _developerRepository.GetByIdAsync(dto.Id);
 
             if (entity == null)
-            {
                 return ServiceResponse.Error($"Розробник з id '{dto.Id}' не знайдений");
-            }
 
             if (await _developerRepository.IsExistsAsync(dto.Name, dto.Id))
-            {
                 return ServiceResponse.Error($"Ім'я '{dto.Name}' вже використовується");
-            }
 
             string oldName = entity.Name;
+
+            // якщо передане нове зображення — видаляємо старе і зберігаємо нове
+            if (dto.Image != null)
+            {
+                if (!string.IsNullOrEmpty(entity.Image))
+                {
+                    string oldPath = Path.Combine(StaticFilesSettings.Developers, entity.Image);
+                    _fileService.DeleteImage(oldPath);
+                }
+
+                var fileResponse = await _fileService.SaveImageAsync(dto.Image, StaticFilesSettings.Developers);
+                if (fileResponse.IsSuccess)
+                    entity.Image = fileResponse.Payload?.ToString();
+            }
 
             _mapper.Map(dto, entity);
 
             bool res = await _developerRepository.UpdateAsync(entity);
 
             if (!res)
-            {
                 return ServiceResponse.Error($"Не вдалося змінити дані розробника");
-            }
 
             var responseDto = _mapper.Map<DeveloperDto>(entity);
-
             return ServiceResponse.Success($"Розробник '{oldName}' успішно змінений", responseDto);
         }
 
@@ -102,16 +136,18 @@ namespace SteamClone.BLL.Services
             var entity = await _developerRepository.GetByIdAsync(id);
 
             if (entity == null)
-            {
                 return ServiceResponse.Error($"Розробник з id '{id}' не знайдений");
+
+            if (!string.IsNullOrEmpty(entity.Image))
+            {
+                string imagePath = Path.Combine(StaticFilesSettings.Developers, entity.Image);
+                _fileService.DeleteImage(imagePath);
             }
 
             bool res = await _developerRepository.DeleteAsync(entity);
 
             if (!res)
-            {
-                return ServiceResponse.Error($"Не вдалося видалити розробника");
-            }
+                return ServiceResponse.Error($"Не вдалося видалити розробника '{entity.Name}'");
 
             return ServiceResponse.Success($"Розробник '{entity.Name}' успішно видалений");
         }

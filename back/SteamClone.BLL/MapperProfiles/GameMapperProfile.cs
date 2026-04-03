@@ -11,18 +11,24 @@ namespace SteamClone.BLL.MapperProfiles
             // GameEntity -> GameDto
             CreateMap<GameEntity, GameDto>();
 
-            // CreateGameDto -> GameEntity
-            CreateMap<CreateGameDto, GameEntity>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Genres, opt => opt.Ignore())
-                .ForMember(dest => dest.Images, opt => opt.Ignore())
-                .ForMember(dest => dest.Developer, opt => opt.Ignore());
-
+            CreateMap<GameEntity, GameDto>()
+                .ForMember(dest => dest.PreviewImage,
+                    opt => opt.MapFrom(src => src.Images
+                        .Where(i => i.IsPreview)
+                        .Select(i => i.Name)
+                        .FirstOrDefault()))
+                .ForMember(dest => dest.Images,
+                    opt => opt.MapFrom(src => src.Images
+                        .Where(i => !i.IsPreview)
+                        .Select(i => i.Name)
+                        .ToList()));
             // UpdateGameDto -> GameEntity
             CreateMap<UpdateGameDto, GameEntity>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore())
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
                 .ForMember(dest => dest.Developer, opt => opt.Ignore());
+
+
         }
     }
 }

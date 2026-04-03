@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SteamClone.API.Extensions;
 using SteamClone.BLL.Dtos.Game;
 using SteamClone.BLL.Services;
+using SteamClone.DAL;
 
 namespace SteamClone.API.Controllers
 {
@@ -9,51 +11,64 @@ namespace SteamClone.API.Controllers
     [Route("api/game")]
     public class GameController : ControllerBase
     {
+        private readonly AppDbContext _context;
         private readonly GameService _gameService;
 
-        public GameController(GameService gameService)
+        public GameController(AppDbContext context, GameService gameService)
         {
+            _context = context;
             _gameService = gameService;
         }
 
-        // GET api/game
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            var response = await _gameService.GetAllAsync();
-            return this.GetResult(response);
+            var games = await _context.Games
+                .AsNoTracking()
+                .ToListAsync();
+            return Ok(games);
         }
 
-        // GET api/game/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var response = await _gameService.GetByIdAsync(id);
-            return this.GetResult(response);
+            var game = await _context.Games
+                .AsNoTracking()
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (game != null)
+            {
+                return Ok(game);
+            }
+            else
+            {
+                return BadRequest($"Гра з id '{id}' не знайдена");
+            }
         }
 
-        // POST api/game
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateGameDto dto)
+        public async Task<IActionResult> CreateAsync([FromForm] CreateGameDto dto)
         {
             var response = await _gameService.CreateAsync(dto);
             return this.GetResult(response);
         }
 
-        // PUT api/game
-        [HttpPut]
-        public async Task<IActionResult> UpdateAsync([FromBody] UpdateGameDto dto)
+        [HttpDelete]
+        public IActionResult Delete()
         {
-            var response = await _gameService.UpdateAsync(dto);
-            return this.GetResult(response);
+            return Ok("Це DELETE метод");
         }
 
-        // DELETE api/game/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
+        [HttpPut]
+        public IActionResult Put()
         {
-            var response = await _gameService.DeleteAsync(id);
-            return this.GetResult(response);
+            return Ok("Це PUT метод");
+        }
+
+        [HttpPatch]
+        public IActionResult Patch()
+        {
+            return Ok("Це PATCH метод");
         }
     }
 }

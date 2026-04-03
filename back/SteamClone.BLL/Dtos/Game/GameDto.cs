@@ -1,3 +1,4 @@
+// GameDto.cs
 using SteamClone.BLL.Dtos.Genre;
 
 namespace SteamClone.BLL.Dtos.Game
@@ -11,5 +12,7 @@ namespace SteamClone.BLL.Dtos.Game
         public string? Description { get; set; }
         public int DeveloperId { get; set; }
         public List<GenreDto> Genres { get; set; } = [];
+        public string? PreviewImage { get; set; }
+        public List<string> Images { get; set; } = [];
     }
 }

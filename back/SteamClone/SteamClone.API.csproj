@@ -20,4 +20,9 @@
     <ProjectReference Include="..\SteamClone.DAL\SteamClone.DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Storage\Developers\" />
+    <Folder Include="Storage\Games\" />
+  </ItemGroup>
+
 </Project>

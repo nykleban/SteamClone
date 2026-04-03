@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using SteamClone.BLL.Services;
+using SteamClone.BLL.Settings;
 using SteamClone.DAL;
 using SteamClone.DAL.Initializer;
 using SteamClone.DAL.Repositories;
@@ -11,11 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<DeveloperRepository>();
 builder.Services.AddScoped<GameRepository>();
+builder.Services.AddScoped<GameImageRepository>();
 
 // Add services
 builder.Services.AddScoped<DeveloperService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<GameService>();
+builder.Services.AddScoped<FileService>();
 
 
 // Add automapper
@@ -64,9 +68,59 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Static files
+var root = builder.Environment.ContentRootPath;
+var storagePath = Path.Combine(root, StaticFilesSettings.Storage);
+var sharePath = Path.Combine(storagePath, StaticFilesSettings.Share);
+var developersPath = Path.Combine(storagePath, StaticFilesSettings.Developers);
+var gamesPath = Path.Combine(storagePath, StaticFilesSettings.Games);
+
+if (!Directory.Exists(storagePath))
+{
+    Directory.CreateDirectory(storagePath);
+}
+
+if (!Directory.Exists(sharePath))
+{
+    Directory.CreateDirectory(sharePath);
+}
+
+if (!Directory.Exists(developersPath))
+{
+    Directory.CreateDirectory(developersPath);
+}
+
+if (!Directory.Exists(gamesPath))
+{
+    Directory.CreateDirectory(gamesPath);
+}
+
+// Share
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(sharePath),
+    RequestPath = "/share"
+});
+
+// Developers
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(developersPath),
+    RequestPath = "/developer"
+});
+
+// Games
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(gamesPath),
+    RequestPath = "/game"
+});
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(corsPolicy);
 
 await app.SeedAsync();
 
