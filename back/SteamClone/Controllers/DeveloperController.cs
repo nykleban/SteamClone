@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SteamClone.API.Extensions;
 using SteamClone.BLL.Dtos.Developer;
 using SteamClone.BLL.Services;
@@ -7,6 +9,7 @@ namespace SteamClone.API.Controllers
 {
     [ApiController]
     [Route("api/developer")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class DeveloperController : ControllerBase
     {
         private readonly DeveloperService _developerService;

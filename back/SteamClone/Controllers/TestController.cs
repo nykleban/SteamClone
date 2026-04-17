@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SteamClone.DAL.Entities;
 
 namespace SteamClone.API.Controllers
 {

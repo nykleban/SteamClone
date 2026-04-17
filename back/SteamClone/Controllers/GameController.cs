@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using SteamClone.API.Extensions;
 using SteamClone.BLL.Dtos.Game;
 using SteamClone.BLL.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using SteamClone.DAL;
+using SteamClone.DAL.Entities;
 
 namespace SteamClone.API.Controllers
 {

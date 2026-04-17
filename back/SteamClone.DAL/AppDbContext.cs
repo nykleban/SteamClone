@@ -1,14 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using SteamClone.DAL.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace SteamClone.DAL
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext
+       : IdentityDbContext<UserEntity, RoleEntity, string,
+           IdentityUserClaim<string>, UserRoleEntity, IdentityUserLogin<string>,
+           IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
         }
+
 
         public DbSet<GameEntity> Games { get; set; }
         public DbSet<DeveloperEntity> Developers { get; set; }
@@ -82,6 +88,31 @@ namespace SteamClone.DAL
                 .HasMany(g => g.Genres)
                 .WithMany(g => g.Games)
                 .UsingEntity("GameGenres");
+
+            // Identity
+            builder.Entity<UserEntity>(e =>
+            {
+                e.Property(u => u.FirstName)
+                .HasMaxLength(100);
+
+                e.Property(u => u.LastName)
+                .HasMaxLength(100);
+
+                e.Property(u => u.Image)
+                .HasMaxLength(50);
+            });
+
+            builder.Entity<UserEntity>()
+                .HasMany(u => u.UserRoles)
+                .WithOne(ur => ur.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+
+            builder.Entity<RoleEntity>()
+                .HasMany(r => r.UserRoles)
+                .WithOne(ur => ur.Role)
+                .HasForeignKey(ur => ur.RoleId)
+                .IsRequired();
         }
     }
 }
