@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
+using SteamClone.BLL.Extensions;
 using SteamClone.BLL.Settings;
 using SteamClone.DAL.Entities;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 
 namespace SteamClone.BLL.Services
@@ -14,16 +16,19 @@ namespace SteamClone.BLL.Services
     public class JwtService
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly ILogger<JwtService> _logger;
 
-        public JwtService(IOptions<JwtSettings> options)
+        public JwtService(IOptions<JwtSettings> options, ILogger<JwtService> logger)
         {
             _jwtSettings = options.Value;
+            _logger = logger;
         }
 
         public string GetAcessToken(UserEntity user, IEnumerable<string> roles)
         {
             if (string.IsNullOrEmpty(_jwtSettings.SecretKey))
             {
+                _logger.LogInformationWithTimestamp("Jwt secret key is null");
                 throw new ArgumentNullException("Jwt secret key is null");
             }
 

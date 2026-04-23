@@ -1,20 +1,45 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
+using Quartz;
+using Serilog;
+using SteamClone.API.Infrastructure;
+using SteamClone.API.Jobs;
+using SteamClone.API.Middlewares;
 using SteamClone.BLL.Services;
 using SteamClone.BLL.Settings;
 using SteamClone.DAL;
 using SteamClone.DAL.Entities;
 using SteamClone.DAL.Initializer;
 using SteamClone.DAL.Repositories;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
+var logsPath = Path.Combine(builder.Environment.ContentRootPath, "Logs");
+
+if (!Directory.Exists(logsPath)) { Directory.CreateDirectory(logsPath); }
+
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", Serilog.Events.LogEventLevel.Information)
+        .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:dd.MM.yyyy HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.File(
+            path: Path.Combine(logsPath, "log-.log"),
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: null,
+            shared: true,
+            outputTemplate: "[{Timestamp:dd.MM.yyyy HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
 // Add repositories
 builder.Services.AddScoped<GenreRepository>();
@@ -96,6 +121,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Add quartz
+var jobs = new (Type type, string cron)[]
+{
+    //(typeof(ConsoleSpamJob), "* * * ? * *"),
+    (typeof(LogsCleanJob), "30 * * ? * *")
+};
+
+builder.Services.AddJobs(jobs);
+builder.Services.AddQuartzHostedService(cfg => cfg.WaitForJobsToComplete = true);
+
 // Add swagger
 builder.Services.AddSwaggerGen(options =>
 {
@@ -140,6 +175,9 @@ builder.Services.AddCors(cfg =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<RequestTimingMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 

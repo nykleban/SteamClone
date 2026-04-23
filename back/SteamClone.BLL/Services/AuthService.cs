@@ -1,11 +1,11 @@
 ﻿
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SteamClone.BLL.Dtos.Auth;
 using SteamClone.BLL.Settings;
 using SteamClone.DAL.Entities;
 using System.Net;
-
 namespace SteamClone.BLL.Services
 {
     public class AuthService
@@ -14,17 +14,19 @@ namespace SteamClone.BLL.Services
         private readonly JwtService _jwtService;
         private readonly IEmailSender _emailSender;
         private readonly EmailSettings _emailSettings;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             UserManager<UserEntity> userManager,
             JwtService jwtService,
             IEmailSender emailSender,
-            IOptions<EmailSettings> emailOptions)
+            IOptions<EmailSettings> emailOptions, ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _jwtService = jwtService;
             _emailSender = emailSender;
             _emailSettings = emailOptions.Value;
+            _logger = logger;
         }
 
         public async Task<ServiceResponse> LoginAsync(LoginDto dto)
@@ -33,6 +35,7 @@ namespace SteamClone.BLL.Services
 
             if (user == null)
             {
+                _logger.LogWarning("[{Date}] - Login attempt failed for username: {UserName}", DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"), dto.UserName);
                 return ServiceResponse.Error($"Користувача з іменем '{dto.UserName}' не існує");
             }
 
